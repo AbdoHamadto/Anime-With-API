@@ -1,65 +1,56 @@
-import { useState, useEffect } from 'react';
-import Bar from "./commponent/bar"
-import Card from "./commponent/card"
-import Alert from './commponent/alert';
+import { useState, useEffect } from "react";
+import Bar from "./commponent/bar";
+import Card from "./commponent/card";
+import Alert from "./commponent/alert";
 
 function App() {
-  
   const [anime, setAnime] = useState([]);
-  const [searchAnime, setSearchAnime] = useState([])
-  const GetData = async () => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const getData = async () => {
     // fetch data
     const data = await fetch("https://api.jikan.moe/v4/anime")
-      .then(res => res.json())
-      .then(res => res.data)
-      .catch(() => Error("Error 404"));
+      .then((res) => res.json())
+      .then((res) => res.data);
 
-      setAnime(data.slice(1, data.length - 1))
-      setSearchAnime(anime)
-  }
-  useEffect(() => GetData, []);
+    setAnime(data.slice(1, data.length - 1));
+  };
 
-  const [alert, setAlert] = useState(false)
-  const [numAnime, setNumAnime] = useState()
+  useEffect(() => getData, []);
+
+  const [alert, setAlert] = useState(false);
+  const [numAnime, setNumAnime] = useState();
+
   const openAlert = (index, state) => {
-    setNumAnime(index)
-    setAlert(state)
-  }
-  const closeAlert = (state) => {
-    setAlert(state)
-  }
-  
-  const onSearch = (word) => {
-    if (word !== "" && word !== undefined) {
-      const filter =  searchAnime.filter((item) => item.title === word)
-      if (filter.length > 0) {
-        setAnime(filter)
-      } else {
-        setAnime(searchAnime)
-      }
-    } else { 
-      setAnime(searchAnime)
-    }
-  }
+    setNumAnime(index);
+    setAlert(state);
+  };
 
-  return(
+  const closeAlert = (state) => {
+    setAlert(state);
+  };
+
+  const results = anime.filter((item) =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
     <>
-    {anime.length > 0 ? 
-      <div>
-        {alert ? <Alert data={anime} numAnime={numAnime} closeAlert={closeAlert} /> : ""}
-        <Bar search={onSearch} />
-        <div className="container">
-          <Card data={anime} open={openAlert} />
+      <Bar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      {results.length > 0 ? (
+        <div>
+          {alert && (
+            <Alert data={results} numAnime={numAnime} closeAlert={closeAlert} />
+          )}
+          <div className="container">
+            <Card data={results} open={openAlert} />
+          </div>
         </div>
-      </div>
-      : 
-      <div>
-        <Bar search={onSearch} />
-        <p className="not-found">Not Found Anime</p>
-      </div>
-      }
-    </> 
-  )
+      ) : (
+        <p className="not-found">Anime not found</p>
+      )}
+    </>
+  );
 }
 
-export default App
+export default App;
